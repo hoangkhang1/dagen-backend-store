@@ -19,9 +19,11 @@ class OrdersController extends Controller
     {
         $id_user = Auth::user()->store_login_id;
 //        dd($id_user);
-        $data = OrderInvoiceModel::leftjoin('store', 'store.store_id', '=', 'order_invoice.storeid')
+        $data = OrderInvoiceModel::select('*','order_invoice.created_at as ngaydathang')
+        ->leftjoin('store', 'store.store_id', '=', 'order_invoice.storeid')
             ->where('store.userid', $id_user)
 //            ->where('processed_status',0)
+                ->orderBy('order_invoice.created_at', 'desc')
             ->get();
 //        dd($data->toArray());
 //        dd($data);

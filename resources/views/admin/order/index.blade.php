@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css"
           href="{{ asset('assets/vendors/datatables/css/dataTables.bootstrap.css') }}"/>
     <link href="{{ asset('assets/css/pages/tables.css') }}" rel="stylesheet" type="text/css"/>
+    <link href="{{ asset('assets/css/pages/tables.css') }}" rel="stylesheet" type="text/css"/>
 @stop
 
 {{-- Montent --}}
@@ -53,7 +54,7 @@
                                     <th>Tổng tiền</th>
                                 </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="order">
                                 <?php foreach ($data as $key => $val): ?>
                                 <tr class="odd gradeX" align="center">
                                     <td style="color: #00A9D5">{{ $val->order_code }}</td>
@@ -64,7 +65,7 @@
                                     @else($val->processed_status == 2)
                                         <td style="color: #AE0E0E;">ĐH hủy</td>
                                     @endif
-                                    <td>{{ $val->created_at }}</td>
+                                    <td>{{ $val->ngaydathang }}</td>
                                     <td style="color: blue">{{ $val->name }}</td>
                                     <td>{{ $val->phone }}</td>
                                     <td style="color: red">{{ number_format($val->total,0) }}</td>
@@ -105,6 +106,7 @@
 @section('footer_scripts')
     <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/jquery.dataTables.js') }}"></script>
     <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/dataTables.bootstrap.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('assets/client/socket-io-client.js') }}"></script>
 
     <script>
         $(document).ready(function () {
@@ -133,6 +135,28 @@
         </div>
     </div>
     <script>
+        var store_id = '{{Auth::user()->store_id}}';
+        // alert(store_id);
+        var socket = io("http://192.168.1.38:3000");
+
+        socket.emit('store',store_id);
+        // socket.emit('store',store_id,function (data) {
+        //     // alert(data);
+        // });
+        socket.on('order_store_' + store_id, function (data) {
+
+            // console.log(data);
+            var data = JSON.parse(data);
+            var x = data.total;
+            x = x.toLocaleString('vi', {style : 'currency', currency : 'VND'});
+            $( "#order" ).prepend( '<tr class="gradeX" align="center"><td style="color: #00A9D5">'+
+                data.order_code+'</td><td>Chưa xữ lý</td><td>'+data.created_at+
+                '</td><td style="color: blue">'+data.name+'</td><td>'+data.phone+'</td><td style="color: red">' +
+                x+
+                '</td><td class="center"><a href="http://banhang-dagen.miennam24h.vn/don-hang/xemchitietdh/'+
+                data.invoice_id+'"><button class="btn btn-primary"><i class="fa fa-info"></i></button></a><a href="http://banhang-dagen.miennam24h.vn/don-hang/duyetdh/06E0E360-79A7-437C-BDC8-71F8C8C0F220"><button class="btn btn-success"><i class="fa fa-pencil"></i></button></a><a href="http://banhang-dagen.miennam24h.vn/don-hang/huydh/06E0E360-79A7-437C-BDC8-71F8C8C0F220"><button class="btn btn-danger"><i class="fa fa-trash-o"></i></button></a></td></tr>' );
+        });
+        
         $(function () {
             $('body').on('hidden.bs.modal', '.modal', function () {
                 $(this).removeData('bs.modal');
